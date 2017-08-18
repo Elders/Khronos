@@ -24,16 +24,16 @@ Automatically generate and upload Toggl entries from JIRA
 - install Xcode from AppStore
 - install [Homebrew](https://brew.sh)
 
-brew update
-brew install npm
-npm install -g toggl-bulk-entry
+		brew update
+		brew install npm
+		npm install -g toggl-bulk-entry
 
 ## Install on Linux (Ubuntu)
 
-sudo apt-get update
-sudo apt-get install swift
-sudo apt-get install npm
-npm install -g toggl-bulk-entry
+	sudo apt-get update
+	sudo apt-get install swift
+	sudo apt-get install npm
+	npm install -g toggl-bulk-entry
 
 ## Intall on Windows
 
@@ -45,7 +45,7 @@ npm install -g toggl-bulk-entry
 
 Before you begin, you must configure the scripts to work for you. You can do this by open the files below and edit their configurations as described.
 
-### `CONFIGURATION.json`
+#### `CONFIGURATION.json`
 - `month` - the month for which to generate entries
 - `year` - the year for which to generate entries
 - `client` - the client that should be set to all entries - **unfortuanetely, at this point it cannot be resolved from JIRA and has to be hardcoded**
@@ -56,7 +56,7 @@ Before you begin, you must configure the scripts to work for you. You can do thi
 - `jiraPassword` - the password for your JIRA account
 - `jiraAssignee` - the assignee for which to generate entries - usually you JIRA nickname
 
-### `TOGGL_API_TOKEN`
+#### `TOGGL_API_TOKEN`
 Set the contents of this file to  your toggle API token.
 
 ## How to use
