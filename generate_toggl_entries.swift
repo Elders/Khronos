@@ -11,6 +11,7 @@ class Configuration {
     
     let month: Int
     let year: Int
+    let daysToSkip: [Int]
     
     let client: String
     let allowedProjects: [String]
@@ -78,6 +79,7 @@ class Configuration {
         
         self.month = month
         self.year = year
+        self.daysToSkip = json["daysToSkip"] as? [Int] ?? []
         self.client = client
         self.allowedProjects = allowedProjects
         self.workingDuration = workingDuration
@@ -96,6 +98,11 @@ class Configuration {
         var workingDates: [Date] = []
         
         for i in 1...daysInMonth {
+            
+            if self.daysToSkip.contains(i) {
+                
+                continue
+            }
             
             let date = self.date(forDay: i)
             
