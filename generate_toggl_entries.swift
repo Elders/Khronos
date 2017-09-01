@@ -211,7 +211,11 @@ extension URLRequest {
     
     static func makeJIRAAssigneeRequest(username: String, password: String, asignee: String) -> URLRequest {
         
-        let url = URL(string: "https://marketvision.atlassian.net/rest/api/2/user?username=\(asignee)")!
+        guard let url = URL(string: "https://marketvision.atlassian.net/rest/api/2/user?username=\(asignee)") else {
+            
+            fatalError("\(#function) - Unable to generate URL")
+        }
+        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.authorizeWith(username: username, password: password)
@@ -226,7 +230,10 @@ extension URLRequest {
         dateFormatter.dateFormat = "yyyy/MM/dd"
         let dateString = dateFormatter.string(from: date)
         
-        let url = URL(string: "https://marketvision.atlassian.net/rest/api/2/search?jql=assignee%20was%20\(asignee)%20AND%20status%20WAS%20IN%20(%22In%20Progress%22)%20ON%20(%22\(dateString)%22)")!
+        guard let url = URL(string: "https://marketvision.atlassian.net/rest/api/2/search?jql=assignee%20was%20\(asignee)%20AND%20status%20WAS%20IN%20(%22In%20Progress%22)%20ON%20(%22\(dateString)%22)") else {
+            
+            fatalError("\(#function) - Unable to generate URL")
+        }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.authorizeWith(username: username, password: password)
@@ -237,7 +244,12 @@ extension URLRequest {
     
     mutating func authorizeWith(username: String, password: String) {
         
-        let value = "Basic " + "\(username):\(password)".data(using: .utf8)!.base64EncodedString()
+        guard let credentials = "\(username):\(password)".data(using: .utf8)?.base64EncodedString() else {
+            
+            fatalError("\(#function) - Unable to generate Authorization header for username=\(username), password=\(password)")
+        }
+        
+        let value = "Basic " + credentials
         self.setValue(value, forHTTPHeaderField: "Authorization")
     }
 }
@@ -314,8 +326,22 @@ func loadJIRAEntries(forUsername username: String, password: String, asignee: St
     let assigneeReuqest = URLRequest.makeJIRAAssigneeRequest(username: username, password: password, asignee: asignee)
     URLSession(configuration: .default).dataTask(with: assigneeReuqest, completionHandler: { (data, response, error) in
         
-        assigneeJSON = try! JSONSerialization.jsonObject(with: data!, options: []) as! [String: Any]
-        semaphore.signal()
+        guard let data = data else { fatalError("\(#function) - no data") }
+        
+        do {
+            
+            guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
+                
+                fatalError("\(#function) - unable to load JSON for URL=\(assigneeReuqest.url!)")
+            }
+            
+            assigneeJSON = json
+            semaphore.signal()
+        }
+        catch {
+            
+            fatalError("\(error)")
+        }
         
     }).resume()
     semaphore.wait()
@@ -323,19 +349,47 @@ func loadJIRAEntries(forUsername username: String, password: String, asignee: St
     let issuesReuqest = URLRequest.makeJIRAIssuesRequest(username: username, password: password, asignee: asignee, date: date)
     URLSession(configuration: .default).dataTask(with: issuesReuqest, completionHandler: { (data, response, error) in
         
-        issuesJSON = try! JSONSerialization.jsonObject(with: data!, options: []) as! [String: Any]
-        semaphore.signal()
+        guard let data = data else { fatalError("\(#function) - no data") }
+        
+        do {
+            
+            guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
+                
+                fatalError("\(#function) - unable to load JSON for URL=\(issuesReuqest.url!)")
+            }
+            
+            issuesJSON = json
+            semaphore.signal()
+        }
+        catch {
+            
+            fatalError("\(error)")
+        }
         
     }).resume()
     semaphore.wait()
     
-    let result = (issuesJSON["issues"] as! [[String: Any]]).map { (issueJSON) -> TogglEntry in
+    guard let issues = issuesJSON["issues"] as? [[String: Any]] else { fatalError("\(#function) - unable to cast issues") }
+    let result = issues.map { (issueJSON) -> TogglEntry in
+        
+        guard
+        let user = assigneeJSON["displayName"] as? String,
+        let email = assigneeJSON["emailAddress"] as? String,
+        let fields = issueJSON["fields"] as? [String: Any],
+        let project = fields["project"] as? [String: Any],
+        let projectName = project["name"] as? String,
+        let key = issueJSON["key"] as? String,
+        let summary = fields["summary"] as? String
+        else {
+            
+            fatalError("\(#function) - unable to map issue\n\(issueJSON)")
+        }
         
         let entry = TogglEntry()
-        entry.user = assigneeJSON["displayName"] as! String
-        entry.email = assigneeJSON["emailAddress"] as! String
-        entry.project = ((issueJSON["fields"] as! [String: Any])["project"] as! [String: Any])["name"] as! String
-        entry.description = "\(issueJSON["key"] as! String) \((issueJSON["fields"] as! [String: Any])["summary"] as! String)"
+        entry.user = user
+        entry.email = email
+        entry.project = projectName
+        entry.description = "\(key) \(summary)"
         return entry
     }
     
