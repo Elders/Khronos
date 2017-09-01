@@ -30,6 +30,8 @@ Automatically generate and upload Toggl entries from JIRA
 
 ## Install on Linux (Ubuntu)
 
+	wget -q https://repo.vapor.codes/apt/keyring.gpg -O- | sudo apt-key add -
+	echo "deb https://repo.vapor.codes/apt $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/vapor.list
 	sudo apt-get update
 	sudo apt-get install swift
 	sudo apt-get install npm
