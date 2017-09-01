@@ -92,7 +92,10 @@ class Configuration {
     lazy var workingDays: [Date] = { [unowned self] in
         
         let firstDate = self.date(forDay: 1)
-        let daysInMonth = firstDate.daysInMonth(in: .fixed)!
+        guard let daysInMonth = firstDate.daysInMonth(in: .fixed) else {
+            
+            fatalError("\(#function) - Unable to load daysInMonth")
+        }
         
         let workingWeekdayIndexes = [1, 2, 3, 4, 5] // monday to friday
         var workingDates: [Date] = []
@@ -122,7 +125,11 @@ class Configuration {
         dateComponents.month = self.month
         dateComponents.year = self.year
         
-        let date = Calendar.fixed.date(from: dateComponents)!
+        guard let date = Calendar.fixed.date(from: dateComponents) else {
+        
+            fatalError("\(#function) - Unable to load date for day=\(day)")
+        }
+        
         return date
     }
     
@@ -274,7 +281,12 @@ extension TimeZone {
     //this is computed property in order to avoid mutation
     public static var fixed: TimeZone {
         
-        return TimeZone(identifier: "UTC")!
+        guard let timeZone = TimeZone(identifier: "UTC") else {
+            
+            fatalError("Unable to load UTC fixed timeZone")
+        }
+        
+        return timeZone
     }
 }
 
@@ -354,8 +366,8 @@ func loadEntries(at date: Date, for configuration: Configuration) -> [TogglEntry
     let dateFormatter = TogglEntry.dateFormatter
     let timeFormatter = TogglEntry.timeFormatter
     
-    let zeroTime = timeFormatter.date(from: "00:00:00")!
-    var startTime = timeFormatter.date(from: startTimeString)!
+    guard let zeroTime = timeFormatter.date(from: "00:00:00") else { fatalError("\(#function) - Unable to load zeroTime") }
+    guard var startTime = timeFormatter.date(from: startTimeString) else { fatalError("\(#function) - Unable to load startTime from string=\(startTimeString)") }
     
     //fill fixed data
     entries.forEach { (entry) in
