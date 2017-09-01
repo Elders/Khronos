@@ -415,7 +415,8 @@ func loadEntries(at date: Date, for configuration: Configuration) -> [TogglEntry
     let jiraPassword = configuration.jiraPassword
     let jiraAssignee = configuration.jiraAssignee
     
-    let entries = loadJIRAEntries(forUsername: jiraUsername, password: jiraPassword, asignee: jiraAssignee, at: date) + loadGoogleCalendarEntries()
+    var entries = loadJIRAEntries(forUsername: jiraUsername, password: jiraPassword, asignee: jiraAssignee, at: date) + loadGoogleCalendarEntries()
+    entries = entries.filter({ configuration.allowedProjects.isEmpty == true || configuration.allowedProjects.contains($0.project) })
     
     let dateFormatter = TogglEntry.dateFormatter
     let timeFormatter = TogglEntry.timeFormatter
@@ -494,7 +495,6 @@ do {
     queue.waitUntilAllOperationsAreFinished()
     
     entries.sort(by: { $0.0.startDate == $0.1.startDate ? $0.0.startTime < $0.1.startTime : $0.0.startDate < $0.1.startDate })
-    entries = entries.filter({ configuration.allowedProjects.isEmpty == true || configuration.allowedProjects.contains($0.project) })
     try write(entries: entries)
 }
 catch {
