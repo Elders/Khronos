@@ -494,7 +494,7 @@ do {
     
     queue.waitUntilAllOperationsAreFinished()
     
-    entries.sort(by: { $0.0.startDate == $0.1.startDate ? $0.0.startTime < $0.1.startTime : $0.0.startDate < $0.1.startDate })
+    entries.sort(by: { (e1, e2) in e1.startDate == e2.startDate ? e1.startTime < e2.startTime : e1.startDate < e2.startDate })
     try write(entries: entries)
 }
 catch {
