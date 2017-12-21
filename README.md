@@ -51,7 +51,7 @@ Before you begin, you must configure the scripts to work for you. You can do thi
 - `month` - the month for which to generate entries
 - `year` - the year for which to generate entries
 - `daysToSkip` - specify custom days (e.g. `[1, 5, 22]`) for which to skip generating entries.
-- `client` - the client that should be set to all entries - **unfortuanetely, at this point it cannot be resolved from JIRA and has to be hardcoded**
+- `clientMap` - the client that should be set to all entries, based on the project name from JIRA - **since, at this point it cannot be resolved from JIRA - it has to be hardcoded**
 - `allowedProjects` - specify projects for which to generate entries. If empty all projects are allowed.
 - `workingDuration` - the working time in seconds. Default to 9h (from 9:00:00 to 18:00:00)
 - `startTimeString` - the begining hour of the working day. Default to "9:00:00"
