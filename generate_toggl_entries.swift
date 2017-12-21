@@ -230,7 +230,7 @@ extension URLRequest {
         dateFormatter.dateFormat = "yyyy/MM/dd"
         let dateString = dateFormatter.string(from: date)
         
-        guard let url = URL(string: "https://marketvision.atlassian.net/rest/api/2/search?jql=(assignee%20was%20\(asignee)%20on%20(%22\(dateString)%22))%20and%20(status%20was%20in%20(%22In%20Progress%22)%20on%20(%22\(dateString)%22))%20OR%20(assignee%20%3D%20\(asignee)%20AND%20status%20was%20in%20(%22In%20Progress%22)%20on%20(%22\(dateString)%22))") else {
+        guard let url = URL(string: "https://marketvision.atlassian.net/rest/api/2/search?jql=(assignee%20was%20\(asignee)%20on%20(%22\(dateString)%22))%20and%20(status%20was%20in%20(%22In%20Progress%22)%20on%20(%22\(dateString)%22))%20OR%20((NOT%20assignee%20changed)%20AND%20assignee%20%3D%20\(asignee)%20AND%20status%20was%20in%20(%22In%20Progress%22)%20on%20(%22\(dateString)%22))") else {
             
             fatalError("\(#function) - Unable to generate URL")
         }
