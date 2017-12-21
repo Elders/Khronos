@@ -13,7 +13,7 @@ class Configuration {
     let year: Int
     let daysToSkip: [Int]
     
-    let client: String
+    let clientMap: [String: String]
     let allowedProjects: [String]
     let workingDuration: TimeInterval
     let startTimeString: String
@@ -42,9 +42,9 @@ class Configuration {
             throw "Unable to load year from configuration"
         }
         
-        guard let client = json["client"] as? String else {
+        guard let clientMap = json["clientMap"] as? [String: String] else {
             
-            throw "Unable to load client from configuration"
+            throw "Unable to load clientMap from configuration"
         }
         
         guard let allowedProjects = json["allowedProjects"] as? [String] else {
@@ -80,7 +80,7 @@ class Configuration {
         self.month = month
         self.year = year
         self.daysToSkip = json["daysToSkip"] as? [Int] ?? []
-        self.client = client
+        self.clientMap = clientMap
         self.allowedProjects = allowedProjects
         self.workingDuration = workingDuration
         self.startTimeString = startTimeString
@@ -230,7 +230,7 @@ extension URLRequest {
         dateFormatter.dateFormat = "yyyy/MM/dd"
         let dateString = dateFormatter.string(from: date)
         
-        guard let url = URL(string: "https://marketvision.atlassian.net/rest/api/2/search?jql=assignee%20was%20\(asignee)%20AND%20status%20WAS%20IN%20(%22In%20Progress%22)%20ON%20(%22\(dateString)%22)") else {
+        guard let url = URL(string: "https://marketvision.atlassian.net/rest/api/2/search?jql=(assignee%20was%20\(asignee)%20on%20(%22\(dateString)%22))%20and%20(status%20was%20in%20(%22In%20Progress%22)%20on%20(%22\(dateString)%22))%20OR%20(assignee%20%3D%20\(asignee)%20AND%20status%20was%20in%20(%22In%20Progress%22)%20on%20(%22\(dateString)%22))") else {
             
             fatalError("\(#function) - Unable to generate URL")
         }
@@ -407,7 +407,7 @@ func loadGoogleCalendarEntries() -> [TogglEntry] {
 
 func loadEntries(at date: Date, for configuration: Configuration) -> [TogglEntry] {
     
-    let client = configuration.client
+    let clientMap = configuration.clientMap
     let workingDuration = configuration.workingDuration
     let startTimeString = configuration.startTimeString
     
@@ -427,7 +427,7 @@ func loadEntries(at date: Date, for configuration: Configuration) -> [TogglEntry
     //fill fixed data
     entries.forEach { (entry) in
         
-        entry.client = client
+        entry.client = clientMap[entry.project] ?? entry.project
         entry.billable = "Yes"
         entry.startDate = dateFormatter.string(from: date)
         entry.endDate = entry.startDate
