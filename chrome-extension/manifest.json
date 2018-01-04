@@ -1,0 +1,29 @@
+{
+    "manifest_version": 2,
+
+    "name": "Khronos",
+    "description": "",
+    "version": "0.1",
+
+    "browser_action": {
+        "default_icon":"icon.png",
+        "default_popup": "popup/popup.html",
+        "default_title": "Khronos"
+    },
+        
+    "options_page": "settings",
+    "permissions": [
+        "tabs",
+        "storage",
+        "identity",
+        "https://www.toggl.com/*",
+        "https://marketvision.atlassian.net/*"
+    ],
+    "content_security_policy": "script-src 'self' https://cdnjs.cloudflare.com; object-src 'self'",
+    "oauth2": {
+        "client_id": "384125956456-4he6b1kfcukuboq04hu7o9eecvvqavf9.apps.googleusercontent.com",
+        "scopes": [
+          "https://www.googleapis.com/auth/drive"
+        ]
+      }
+}

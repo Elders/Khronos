@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<link rel="icon" type="image/png" href="../../icon.png">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+	<title>Khronos</title>
+
+	<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+  <meta name="viewport" content="width=device-width" />
+
+
+    <!-- Bootstrap core CSS     -->
+    <link href="../assets/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Animation library for notifications   -->
+    <link href="../assets/css/animate.min.css" rel="stylesheet"/>
+
+    <!--  Light Bootstrap Table core CSS    -->
+    <link href="../assets/css/light-bootstrap-dashboard.css" rel="stylesheet"/>
+
+
+    <!--  CSS for Demo Purpose, don't include it in your project     -->
+    <link href="../assets/css/demo.css" rel="stylesheet" />
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.6.2/fullcalendar.min.css" rel="stylesheet" />
+    
+
+
+    <!--     Fonts and icons     -->
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700,300' rel='stylesheet' type='text/css'>
+    <link href="../assets/css/pe-icon-7-stroke.css" rel="stylesheet" />
+
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="sidebar" data-color="red" data-image="https://static1.squarespace.com/static/5624e74de4b0a1b15ad8766c/t/5738c09c2eeb813e75b3169f/1463337120952/">
+
+    <!--
+
+        Tip 1: you can change the color of the sidebar using: data-color="blue | azure | green | orange | red | purple"
+        Tip 2: you can also add an image using data-image tag
+
+    -->
+
+    	<div class="sidebar-wrapper">
+            <div class="logo">
+                <a href="" class="simple-text">
+                    <img src="https://www.jobs.bg/assets/logo/2017-02-22/b_8bb178e4cb877a4beb3f2e2204950af7.png" style="width: 100%;"/>
+                </a>
+            </div>
+
+            <ul class="nav">
+                <li>
+                    <a href="">
+                        <i class="pe-7s-timer"></i>
+                        <p>Track Time</p>
+                    </a>
+                </li>
+               
+                <li class="active-pro">
+                    <a href="../settings/settings.html">
+                        <i class="pe-7s-settings"></i>
+                        <p>Settings</p>
+                    </a>
+                </li>
+            </ul>
+    	</div>
+    </div>
+
+    <div class="main-panel">
+        <nav class="navbar navbar-default navbar-fixed">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">Track Time</a>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-left">
+                        <li>
+                            <a href="" class="dropdown-toggle" data-toggle="dropdown">
+                                <p class="hidden-lg hidden-md">Track Time</p>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+
+        <div class="content">
+            <div class="row" id="container-platform-choice">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="header text-center">
+                            <h4 class="title">Choose platforms to use:</h4>
+                        </div>
+                        <div class="content">
+                            
+                            <div class="row">
+                                <div class="col-md-1">From</div>
+                                <div class="col-md-5">
+                                    <div class="dropdown">
+                                        <button class="btn btn-default dropdown-toggle width-100" type="button" id="dropDownAvailableManagementPlatforms" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                            Management Platforms
+                                            <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu width-100" aria-labelledby="dropDownAvailableManagementPlatforms">
+                                        </ul>
+                                    </div>  
+                                </div>
+                                
+                                <div class="col-md-1">To</div>
+                                <div class="col-md-5">
+                                    <div class="dropdown">
+                                        <button class="btn btn-default dropdown-toggle width-100" type="button" id="dropDownAvailableTimeTrackingPlatforms" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                            Time Tracking Platforms
+                                            <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu width-100" aria-labelledby="dropDownAvailableTimeTrackingPlatforms">
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row text-center margin-top-10">
+                                <button type="submit" class="btn btn-danger btn-fill disabled" id="btn-platforms-chosen">Continue</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>  
+
+            <div class="row hidden" id="container-trackboard">
+                    <div class="col-md-3">
+                            <div class="card">
+                                <div class="header text-center">
+                                    <h4 class="title">Project Bindings:</h4>
+                                </div>
+                                <div class="content" id="container-project-bindings">
+                                    <div class="row text-center" style="background-color:lightgray">
+                                        <div class="col-md-12">
+                                            <p><em>None</em></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="header text-center">
+                                <h4 class="title">Select the dates you want to log then click on calculate:</h4>
+                            </div>
+                            <div class="content">                                
+                                <div id="calendar"></div>
+                            </div>
+                            <div class="footer" style="padding-left:10px;padding-right:10px;">    
+                                    <div class="width-100">
+                                        <button type="button" class="btn btn-info btn-fill pull-left" id="btn-calendar-calculate">Calculate</button>
+                                        <button type="button" class="btn btn-warning btn-fill pull-right" id="btn-track-issues">Track</button>  
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                            <div class="card" id="task-component">
+                                <div class="header text-center">
+                                    <h4 class="title"></h4>
+                                    <h5><em class="date"></em></h5>
+                                </div>
+                                <div class="content">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <span>Project:</span>
+                                        </div>    
+                                        <div class="col-md-8">
+                                            <span class="project-name"></span>
+                                        </div> 
+                                    </div>
+                                    <div class="row">
+                                            <div class="col-md-4">
+                                                <span>Link:</span>
+                                            </div>    
+                                            <div class="col-md-8">
+                                                <a href="#" class="issue-link" target="_blank"></a>
+                                            </div> 
+                                        </div>
+                                </div>
+                                <div class="footer" style="padding-left:10px;padding-right:10px;">    
+                                    <div class="width-100">
+                                        <button type="button" class="btn btn-info btn-fill pull-left disabled">Save</button>
+                                        <button type="button" class="btn btn-warning btn-fill pull-right btn-delete">Delete</button>  
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                </div>  
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="bind-project-modal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+      
+          <!-- Modal content-->
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+              <h4 class="modal-title">Modal Header</h4>
+            </div>
+            <div class="modal-body">
+              <p>Select project from Toggl to bind to this project:</p>
+              
+                <div class="dropdown">
+                    <button class="btn btn-default dropdown-toggle width-100" type="button" id="dropDownTimeTrackingProjectsToBind" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Toggl Projects
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu width-100" aria-labelledby="dropDownTimeTrackingProjectsToBind">
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default disabled" data-dismiss="modal" id="btn-project-bind-save">Save</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
+          </div>
+      
+        </div>
+      </div>
+
+
+</body>
+
+    <!--   Core JS Files   -->
+    <script src="../assets/js/jquery-1.10.2.js" type="text/javascript"></script>
+	<script src="../assets/js/bootstrap.min.js" type="text/javascript"></script>
+
+	<!--  Checkbox, Radio & Switch Plugins -->
+	<script src="../assets/js/bootstrap-checkbox-radio-switch.js"></script>
+
+	<!--  Charts Plugin -->
+	<script src="../assets/js/chartist.min.js"></script>
+
+    <!--  Notifications Plugin    -->
+    <script src="../assets/js/bootstrap-notify.js"></script>
+
+    <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
+    <script src="../assets/js/light-bootstrap-dashboard.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js"></script>
+    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.6.2/fullcalendar.min.js"></script>
+    
+    <script src="../assets/js/right-click-fullcalendar.js"></script>
+   
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.js"></script>
+
+
+    <!-- Light Bootstrap Table DEMO methods, don't include it in your project! -->
+    <script src="./lib/DataProvider.js"></script>
+    <script src="./lib/JiraProvider.js"></script>
+    <script src="./lib/ToggleEntry.js"></script>
+    <script src="./lib/ToggleProvider.js"></script>
+    
+	<script src="track.js"></script>
+
+</html>
