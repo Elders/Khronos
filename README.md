@@ -56,7 +56,7 @@ Before you begin, you must configure the scripts to work for you. You can do thi
 - `workingDuration` - the working time in seconds. Default to 9h (from 9:00:00 to 18:00:00)
 - `startTimeString` - the begining hour of the working day. Default to "9:00:00"
 - `jiraUsername` - the username for your JIRA account
-- `jiraPassword` - the password for your JIRA account
+- `jiraPassword` - the password for your JIRA account or API token 
 - `jiraAssignee` - the assignee for which to generate entries - usually you JIRA nickname
 
 #### `TOGGL_API_TOKEN`
