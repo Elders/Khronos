@@ -56,7 +56,7 @@ Before you begin, you must configure the scripts to work for you. You can do thi
 - `workingDuration` - the working time in seconds. Default to 9h (from 9:00:00 to 18:00:00)
 - `startTimeString` - the begining hour of the working day. Default to "9:00:00"
 - `jiraUsername` - the username for your JIRA account
-- `jiraPassword` - the password for your JIRA account or API token 
+- `jiraPassword` - the password for your JIRA account or [API token](#how-to-generate-jira-api-token) 
 - `jiraAssignee` - the assignee for which to generate entries - usually you JIRA nickname
 
 #### `TOGGL_API_TOKEN`
@@ -70,3 +70,12 @@ After you have configured the scripts, you can try them out.
 - take a look at the generated entries and if nececary you can manually edit the file
 - run `upload_toggle_entries.sh`
 - go to your toggl account and the entries from the csv file should be present.
+
+## How to generate JIRA API Token
+
+Its always better and more secure to use API tokens rarther than your real password. 
+- go to **API Tokens** on your [Atlassian Account page](https://id.atlassian.com/manage/api-tokens)
+- click on **Create API token** and follow the instructions
+- you can now use your newly created API token instead of your password in the [Configuration](#configuration)
+
+**Keep in mid that once you generate an API Token and close the window - you will not be able to see its value any more. So store it at safe place.**
