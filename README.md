@@ -48,9 +48,9 @@ Automatically generate and upload Toggl entries from JIRA
 Before you begin, you must configure the scripts to work for you. You can do this by open the files below and edit their configurations as described.
 
 #### `CONFIGURATION.json`
-- `month` - the month for which to generate entries
-- `year` - the year for which to generate entries
-- `daysToSkip` - specify custom days (e.g. `[1, 5, 22]`) for which to skip generating entries.
+- `from` - the starting date from which to generate entries, using format `yyyy-MM-dd`
+- `to` - the end date to which to generate entries, using format `yyyy-MM-dd`
+- `skip` - specify custom dates, uisng format `yyyy-MM-dd` (e.g. `["2018-03-29", 2018-02-05]`), for which to skip generating entries.
 - `clientMap` - the client that should be set to all entries, based on the project name from JIRA - **since, at this point it cannot be resolved from JIRA - it has to be hardcoded**
 - `allowedProjects` - specify projects for which to generate entries. If empty all projects are allowed.
 - `workingDuration` - the working time in seconds. Default to 9h (from 9:00:00 to 18:00:00)
