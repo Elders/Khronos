@@ -9,9 +9,9 @@ extension String: Error {}
 
 class Configuration {
     
-    let month: Int
-    let year: Int
-    let daysToSkip: [Int]
+    let from: Date
+    let to: Date
+    let skip: [Date]
     
     let clientMap: [String: String]
     let allowedProjects: [String]
@@ -22,24 +22,36 @@ class Configuration {
     let jiraPassword: String
     let jiraAssignee: String
     
+    static let dateFormatter: DateFormatter = {
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        dateFormatter.calendar = .fixed
+        dateFormatter.locale = .fixed
+        dateFormatter.timeZone = .fixed
+        
+        return dateFormatter
+    }()
+    
     init() throws {
         
         let configurationFileURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath, isDirectory: true).appendingPathComponent("CONFIGURATION", isDirectory: false).appendingPathExtension("json")
         let data = try Data(contentsOf: configurationFileURL)
+        let dateFormatter = Configuration.dateFormatter
         
         guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
             
             throw "Unable to load configuration"
         }
         
-        guard let month = json["month"] as? Int else {
+        guard let fromString = json["from"] as? String, let fromDate = dateFormatter.date(from: fromString)  else {
             
-            throw "Unable to load month from configuration"
+            throw "Unable to load `from` date from configuration"
         }
         
-        guard let year = json["year"] as? Int else {
+        guard let toString = json["to"] as? String, let toDate = dateFormatter.date(from: toString) else {
             
-            throw "Unable to load year from configuration"
+            throw "Unable to load `to` date from configuration"
         }
         
         guard let clientMap = json["clientMap"] as? [String: String] else {
@@ -77,9 +89,21 @@ class Configuration {
             throw "Unable to load jiraAssignee from configuration"
         }
         
-        self.month = month
-        self.year = year
-        self.daysToSkip = json["daysToSkip"] as? [Int] ?? []
+        self.from = fromDate
+        self.to = toDate
+        
+        self.skip = (json["skip"] as? [String] ?? []).reduce([]) { (result, string) -> [Date] in
+            
+            var result = result
+            
+            if let date = dateFormatter.date(from: string) {
+                
+                result.append(date)
+            }
+            
+            return result
+        }
+        
         self.clientMap = clientMap
         self.allowedProjects = allowedProjects
         self.workingDuration = workingDuration
@@ -89,62 +113,26 @@ class Configuration {
         self.jiraAssignee = jiraAssignee
     }
     
-    lazy var workingDays: [Date] = { [unowned self] in
+    lazy var workingDates: [Date] = { [unowned self] in
         
-        let firstDate = self.date(forDay: 1)
-        guard let daysInMonth = firstDate.daysInMonth(in: .fixed) else {
-            
-            fatalError("\(#function) - Unable to load daysInMonth")
-        }
-        
+        let calendar = Calendar.fixed
         let workingWeekdayIndexes = [1, 2, 3, 4, 5] // monday to friday
-        var workingDates: [Date] = []
         
-        for i in 1...daysInMonth {
+        var date = self.from
+        var workingDates: [Date] = [date]
+        
+        while date <= self.to {
             
-            if self.daysToSkip.contains(i) {
-                
-                continue
-            }
+            date = calendar.date(byAdding: .day, value: 1, to: date)!
             
-            let date = self.date(forDay: i)
-            
-            if workingWeekdayIndexes.contains(date.weekdayIndex(in: .fixed)) {
-                
+            if !self.skip.contains(date) && workingWeekdayIndexes.contains(date.weekdayIndex(in: .fixed)) {
+
                 workingDates.append(date)
             }
         }
         
         return workingDates
     }()
-    
-    func date(forDay day: Int) -> Date {
-        
-        var dateComponents = DateComponents()
-        dateComponents.day = day
-        dateComponents.month = self.month
-        dateComponents.year = self.year
-        
-        guard let date = Calendar.fixed.date(from: dateComponents) else {
-        
-            fatalError("\(#function) - Unable to load date for day=\(day)")
-        }
-        
-        return date
-    }
-    
-    func dates(forDays days: [Int]) -> [Date]  {
-        
-        var result: [Date] = []
-        
-        for day in days {
-            
-            let date = self.date(forDay: day)
-            result.append(date)
-        }
-        
-        return result
-    }
 }
 
 class TogglEntry {
@@ -230,7 +218,7 @@ extension URLRequest {
         dateFormatter.dateFormat = "yyyy/MM/dd"
         let dateString = dateFormatter.string(from: date)
         
-        guard let url = URL(string: "https://marketvision.atlassian.net/rest/api/2/search?jql=(assignee%20was%20\(asignee)%20on%20(%22\(dateString)%22))%20and%20(status%20was%20in%20(%22In%20Progress%22)%20on%20(%22\(dateString)%22))%20OR%20((NOT%20assignee%20changed)%20AND%20assignee%20%3D%20\(asignee)%20AND%20status%20was%20in%20(%22In%20Progress%22)%20on%20(%22\(dateString)%22))") else {
+        guard let url = URL(string: "https://marketvision.atlassian.net/rest/api/2/search?jql=(assignee%20was%20\(asignee)%20on%20(%22\(dateString)%22))%20and%20(status%20was%20in%20(%22In%20Progress%22)%20on%20(%22\(dateString)%22))%20OR%20(assignee%20%3D%20\(asignee)%20AND%20status%20was%20in%20(%22In%20Progress%22)%20on%20(%22\(dateString)%22))") else {
             
             fatalError("\(#function) - Unable to generate URL")
         }
@@ -484,7 +472,7 @@ do {
     var entries: [TogglEntry] = []
     let queue = OperationQueue()
     
-    for day in configuration.workingDays {
+    for day in configuration.workingDates {
         
         queue.addOperation {
             
