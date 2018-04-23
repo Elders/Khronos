@@ -4,7 +4,7 @@
     "daysToSkip": [],
 	"clientMap": {"VAPT": "OneBigSplash", "VAPT-Server": "OneBigSplash", "VAPT-iOS": "OneBigSplash", "VAPT-Android": "OneBigSplash", "Cellements Support": "Cellements", "NewGen": "MarketVision", "Pruvit Support": "Pruvit", "Ticketing System": "MarketVision", "Identity and Access": "MarketVision"},
 	"allowedProjects": [],
-	"workingDuration": 32400.0,
+	"workingDuration": 28800.0,
 	"startTimeString": "9:00:00",
 	"jiraUsername": "",
 	"jiraPassword": "",
