@@ -15,9 +15,11 @@ Automatically generate and upload Toggl entries from JIRA
 - being a party animal
 
 ## Requirements
-- swift 3
+- swift 4
 - npm
 - toggl-bulk-entry
+- [Google Calendar API setup](https://developers.google.com/calendar/quickstart/ruby)
+- ruby (used for google calendar)
 
 ## Intall on macOS
 
@@ -27,6 +29,7 @@ Automatically generate and upload Toggl entries from JIRA
 		brew update
 		brew install npm
 		npm install -g toggl-bulk-entry
+		gem install google-api-client --user-install
 
 ## Install on Linux (Ubuntu)
 
@@ -35,6 +38,8 @@ Automatically generate and upload Toggl entries from JIRA
 	sudo apt-get update
 	sudo apt-get install swift
 	sudo apt-get install npm
+	sudo apt-get install ruby
+	gem install google-api-client
 	npm install -g toggl-bulk-entry
 
 ## Intall on Windows
@@ -58,18 +63,35 @@ Before you begin, you must configure the scripts to work for you. You can do thi
 - `jiraUsername` - the username for your JIRA account
 - `jiraPassword` - the password for your JIRA account or [API token](#how-to-generate-jira-api-token) 
 - `jiraAssignee` - the assignee for which to generate entries - usually you JIRA nickname
+- `googleCalendarIDs` - list of google caliendar ids, for which to track events
 
 #### `TOGGL_API_TOKEN`
 Set the contents of this file to  your toggle API token.
+
+#### `GOOGLE_CALENDAR_AUTH`
+This file is generated when you enable the [Google Calendar API in Step 1](https://developers.google.com/calendar/quickstart/ruby).
+When you download the file - rename it to `GOOGLE_CALENDAR_AUTH.json`.
 
 ## How to use
 
 After you have configured the scripts, you can try them out.
 
+- (first time only) run the `get_google_calendar_entries.rb` in order to authenticate for google calendar access
 - run `generate_toggl_entries.swift` in terminal - this should produce a file called `toggl_entries.csv` which will contains all entries that are going to be uploaded to Toggl
 - take a look at the generated entries and if nececary you can manually edit the file
 - run `upload_toggle_entries.sh`
 - go to your toggl account and the entries from the csv file should be present.
+
+## Google Calendar integration
+
+There is some code written to support this + setup options, however ingeneral, there is a lot of missing information (user, project, client) on the events and calendars, so we would have to think of some convention or alternative how to manage it.
+
+Until that, the `generate_toggl_entries.swift` will not access calendar entries.
+If you'd like to play around with it - take a look at `get_google_calendar_entries.rb`
+
+The script takes 2 arguments
+- date in format `yyyy-MM-dd`
+- calendar id - eg. `primary` - you can get your calendar id from the settings of the calendar at calendar.google.com
 
 ## How to generate JIRA API Token
 
@@ -79,3 +101,7 @@ Its always better and more secure to use API tokens rarther than your real passw
 - you can now use your newly created API token instead of your password in the [Configuration](#configuration)
 
 **Keep in mid that once you generate an API Token and close the window - you will not be able to see its value any more. So store it at safe place.**
+
+## How to generate `GOOGLE_CALENDAR_AUTH `
+
+Follow the instructions in the [Google Calendar API in Step 1](https://developers.google.com/calendar/quickstart/ruby).

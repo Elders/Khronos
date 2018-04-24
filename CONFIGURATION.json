@@ -1,12 +1,13 @@
 {
 	"from":"2018-02-26",
-    "to": "2018-03-31",
-    "skip": ["2018-03-29"],
+    	"to": "2018-03-31",
+    	"skip": ["2018-03-29"],
 	"clientMap": {"VAPT": "OneBigSplash", "VAPT-Server": "OneBigSplash", "VAPT-iOS": "OneBigSplash", "VAPT-Android": "OneBigSplash", "Cellements Support": "Cellements", "NewGen": "MarketVision", "Pruvit Support": "Pruvit", "Ticketing System": "MarketVision", "Identity and Access": "MarketVision"},
 	"allowedProjects": [],
 	"workingDuration": 28800.0,
 	"startTimeString": "9:00:00",
 	"jiraUsername": "",
 	"jiraPassword": "",
-	"jiraAssignee": ""
+	"jiraAssignee": "",
+	"googleCalendarIDs": []
 }

@@ -7,6 +7,24 @@ let usage = "Loads entries from JIRA and Google Calendar and uploads them to Tog
 
 extension String: Error {}
 
+@discardableResult
+func shell(_ args: String...) -> (Int32, String?) {
+    let task = Process()
+    task.launchPath = "/usr/bin/env"
+    task.arguments = args
+    
+    let pipe = Pipe()
+    task.standardOutput = pipe
+    
+    task.launch()
+    task.waitUntilExit()
+    
+    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+    let string = String(data: data, encoding: .utf8)
+    
+    return (task.terminationStatus, string)
+}
+
 class Configuration {
     
     let from: Date
@@ -21,6 +39,8 @@ class Configuration {
     let jiraUsername: String
     let jiraPassword: String
     let jiraAssignee: String
+    
+    let googleCalendarIDs: [String]
     
     static let dateFormatter: DateFormatter = {
         
@@ -108,9 +128,12 @@ class Configuration {
         self.allowedProjects = allowedProjects
         self.workingDuration = workingDuration
         self.startTimeString = startTimeString
+        
         self.jiraUsername = jiraUsername
         self.jiraPassword = jiraPassword
         self.jiraAssignee = jiraAssignee
+        
+        self.googleCalendarIDs = json["googleCalendarIDs"] as? [String] ?? []
     }
     
     lazy var workingDates: [Date] = { [unowned self] in
@@ -166,6 +189,9 @@ class TogglEntry {
         
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH:mm:ss"
+        timeFormatter.calendar = .fixed
+        timeFormatter.locale = .fixed
+        timeFormatter.timeZone = .fixed
         
         return timeFormatter
     }()
@@ -174,6 +200,9 @@ class TogglEntry {
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
+        dateFormatter.calendar = .fixed
+        dateFormatter.locale = .fixed
+        dateFormatter.timeZone = .fixed
         
         return dateFormatter
     }()
@@ -190,6 +219,59 @@ class TogglEntry {
         let duration = (hours * 60 * 60) + (minutes * 60)
         
         return duration
+    }
+    
+    func durationString(from timeInterval: TimeInterval) -> String {
+        
+        let timeFormatter = TogglEntry.timeFormatter
+        
+        let zeroTime = timeFormatter.date(from: "00:00:00")!
+        let durationTime = zeroTime.addingTimeInterval(timeInterval)
+        return timeFormatter.string(from: durationTime)
+    }
+}
+
+struct GoogleCalendarEvent: Codable {
+    
+    let allDay: Bool
+    let title: String
+    let start: String
+    let end: String
+    
+    static let timeFormatter: DateFormatter = {
+        
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH:mm:ss"
+        timeFormatter.calendar = .fixed
+        timeFormatter.locale = .fixed
+        timeFormatter.timeZone = .fixed
+        
+        return timeFormatter
+    }()
+    
+    static let partialDayDateFormatter: ISO8601DateFormatter = {
+        
+        let dateFormatter = ISO8601DateFormatter()
+        return dateFormatter
+    }()
+    
+    var durationString: String? {
+        
+        if self.allDay {
+            
+            return nil
+        }
+        
+        let dateFormatter = GoogleCalendarEvent.partialDayDateFormatter
+        let timeFormatter = GoogleCalendarEvent.timeFormatter
+        
+        guard let startDate = dateFormatter.date(from: self.start), let endDate = dateFormatter.date(from: self.end), let durationDate = Calendar.fixed.date(from: Calendar.fixed.dateComponents([.hour, .minute], from: startDate, to: endDate)) else {
+            
+            return nil
+        }
+        
+        let durationString = timeFormatter.string(from: durationDate)
+        return durationString
     }
 }
 
@@ -386,9 +468,54 @@ func loadJIRAEntries(forUsername username: String, password: String, asignee: St
 
 //MARK: - Google Calendar
 
-func loadGoogleCalendarEntries() -> [TogglEntry] {
+func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) -> [TogglEntry] {
     
-    return []
+    let dateFormatter = Configuration.dateFormatter
+    let dateString = dateFormatter.string(from: date)
+    var entries: [TogglEntry] = []
+    
+    for calendarID in configuration.googleCalendarIDs {
+
+        let output = shell("./get_google_calendar_entries.rb", dateString, calendarID)
+        
+        if let eventsJSONData = output.1?.data(using: .utf8) {
+            
+            let events = (try? JSONDecoder().decode([GoogleCalendarEvent].self, from: eventsJSONData)) ?? []
+            
+            for event in events {
+                
+                if event.allDay {
+                    
+                    let entry = TogglEntry()
+
+                    entry.user = "whole day"
+                    entry.email = "whole day"
+                    entry.project = "whole day"
+                    entry.description = event.title
+                    entry.duration = entry.durationString(from: configuration.workingDuration)
+                    
+                    entries.append(entry)
+                    
+                    continue
+                }
+                
+                if let duration = event.durationString {
+                    
+                    let entry = TogglEntry()
+
+                    entry.user = "gg"
+                    entry.email = "gg"
+                    entry.project = "gg"
+                    entry.description = event.title
+                    entry.duration = duration
+
+                    entries.append(entry)
+                }
+            }
+        }
+    }
+    
+    return entries
 }
 
 //MARK: - General purpose operation
@@ -403,8 +530,18 @@ func loadEntries(at date: Date, for configuration: Configuration) -> [TogglEntry
     let jiraPassword = configuration.jiraPassword
     let jiraAssignee = configuration.jiraAssignee
     
-    var entries = loadJIRAEntries(forUsername: jiraUsername, password: jiraPassword, asignee: jiraAssignee, at: date) + loadGoogleCalendarEntries()
+//    let googleCalendarEntries =  loadGoogleCalendarEntries(at: date, for: configuration)
+//    let wholeDayCalendarEntries = googleCalendarEntries.filter({ $0.duration == $0.durationString(from: configuration.workingDuration) })
+//    let partialDayCalendarEntries = googleCalendarEntries.filter({ $0.duration != $0.durationString(from: configuration.workingDuration) })
+    
+    var entries = loadJIRAEntries(forUsername: jiraUsername, password: jiraPassword, asignee: jiraAssignee, at: date) //+ partialDayCalendarEntries
     entries = entries.filter({ configuration.allowedProjects.isEmpty == true || configuration.allowedProjects.contains($0.project) })
+    
+//    //the there are whole day entries - take the appropriate one and use it instead of everything else
+//    if wholeDayCalendarEntries.isEmpty == false {
+//        
+//        entries = [wholeDayCalendarEntries.first!]
+//    }
     
     let dateFormatter = TogglEntry.dateFormatter
     let timeFormatter = TogglEntry.timeFormatter
@@ -471,17 +608,17 @@ do {
     let configuration = try Configuration()
     var entries: [TogglEntry] = []
     let queue = OperationQueue()
-    
+
     for day in configuration.workingDates {
-        
+
         queue.addOperation {
-            
+
             entries.append(contentsOf: loadEntries(at: day, for: configuration))
         }
     }
-    
+
     queue.waitUntilAllOperationsAreFinished()
-    
+
     entries.sort(by: { (e1, e2) in e1.startDate == e2.startDate ? e1.startTime < e2.startTime : e1.startDate < e2.startDate })
     try write(entries: entries)
 }
