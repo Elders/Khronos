@@ -4,9 +4,15 @@ Automatically generate and upload Toggl entries from JIRA
 
 ## Features
 - [x] automatically loads entries from JIRA
-- [ ] automatically loads entries from Google Calendar
+	- [ ] customizable assignee status
+- [x] automatically loads entries from Google Calendar
+	- [ ] handle special events, like PTOs and national holidays
 - [x] automatically calcualte average entry time
 - [x] automatically uploads entries to Toggl
+- [ ] separate service scripts
+- [ ] common entries data models
+- [ ] ability to use custom entries providers (alternatives of Jira and Google Calendar)
+- [ ] ability to use custom entries consumers (alternatives of Toggl)
 - [x] gives you more time to 
 - code
 - play games
@@ -53,17 +59,25 @@ Automatically generate and upload Toggl entries from JIRA
 Before you begin, you must configure the scripts to work for you. You can do this by open the files below and edit their configurations as described.
 
 #### `CONFIGURATION.json`
-- `from` - the starting date from which to generate entries, using format `yyyy-MM-dd`
-- `to` - the end date to which to generate entries, using format `yyyy-MM-dd`
-- `skip` - specify custom dates, uisng format `yyyy-MM-dd` (e.g. `["2018-03-29", 2018-02-05]`), for which to skip generating entries.
-- `clientMap` - the client that should be set to all entries, based on the project name from JIRA - **since, at this point it cannot be resolved from JIRA - it has to be hardcoded**
-- `allowedProjects` - specify projects for which to generate entries. If empty all projects are allowed.
-- `workingDuration` - the working time in seconds. Default to 9h (from 9:00:00 to 18:00:00)
-- `startTimeString` - the begining hour of the working day. Default to "9:00:00"
-- `jiraUsername` - the username for your JIRA account
-- `jiraPassword` - the password for your JIRA account or [API token](#how-to-generate-jira-api-token) 
-- `jiraAssignee` - the assignee for which to generate entries - usually you JIRA nickname
-- `googleCalendarIDs` - list of google caliendar ids, for which to track events
+- `khronos` - this is the general configuration of Khronos
+	- `from` - the starting date from which to generate entries, using format `yyyy-MM-dd`
+	- `to` - the end date to which to generate entries, using format `yyyy-MM-dd`
+	- `skip` - specify custom dates, uisng format `yyyy-MM-dd` (e.g. `["2018-03-29", 2018-02-05]`), for which to skip generating entries.
+	- `workingDuration` - the working time in seconds. Default to 9h (from 9:00:00 to 18:00:00)
+	- `startTimeString` - the begining hour of the working day. Default to "9:00:00"
+- `jira` - configuration related to Jira
+	- `username` - the username for your JIRA account
+	- `password` - the password for your JIRA account or [API token](#how-to-generate-jira-api-token) 
+	- `assignee` - the assignee for which to generate entries - usually you JIRA nickname
+	- `allowedProjects` - specify projects for which to generate entries. If empty all projects are allowed.
+- `google` - configuration related to Google Calendar
+	- `calendarIDs` - list of google caliendar ids, for which to track events
+	- `username` - the google username of the user for which to track events
+- `toggl` - configuration related to Toggl
+	- `email` - the email of the toggl user
+	- `name` - the dispaly name of the toggl user
+	- `jiraClientMap` - the client that should be set to all jira entries, based on the project name from JIRA - **since, at this point it cannot be resolved from JIRA - it has to be hardcoded**
+
 
 #### `TOGGL_API_TOKEN`
 Set the contents of this file to  your toggle API token.
@@ -82,16 +96,29 @@ After you have configured the scripts, you can try them out.
 - run `upload_toggle_entries.sh`
 - go to your toggl account and the entries from the csv file should be present.
 
+## Jira integration
+
+Khronos loads all Jira tickets that were assigned to the given assignee (specified in the `CONFIGURATION.json`) and were with `In Progress` status.
+
 ## Google Calendar integration
+
+The google calendar integration works by loading calendar events, associated to a given set of calendars (specified in the `CONFIGURATION.json`).
+
+Since there is no easy way to derive the client and project, needed by Toggl, the integration work by looking up the event's description for a string with the following convention:
+
+**toggl:`client`:`project`**
+
+where `client` and `project` are the respective client and project for which the event should be logged.
+
+If the client and project cannot be found, the event is ignored.
 
 There is some code written to support this + setup options, however ingeneral, there is a lot of missing information (user, project, client) on the events and calendars, so we would have to think of some convention or alternative how to manage it.
 
-Until that, the `generate_toggl_entries.swift` will not access calendar entries.
-If you'd like to play around with it - take a look at `get_google_calendar_entries.rb`
+The scrip that loads the calendar events is `get_google_calendar_entries.rb` and takes the following arguments:
 
-The script takes 2 arguments
 - date in format `yyyy-MM-dd`
 - calendar id - eg. `primary` - you can get your calendar id from the settings of the calendar at calendar.google.com
+- email - the email of the user for which to log the events
 
 ## How to generate JIRA API Token
 
