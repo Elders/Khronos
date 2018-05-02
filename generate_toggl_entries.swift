@@ -210,11 +210,20 @@ class TogglEntry {
 
 struct GoogleCalendarEvent: Codable {
     
+    enum ResponseStatus: String, Codable {
+        
+        case needsAction = "needsAction"
+        case declined = "declined"
+        case tentative = "tentative"
+        case accepted = "accepted"
+    }
+    
     let allDay: Bool
     let title: String
     let start: String
     let end: String
     let description: String?
+    let responseStatus: ResponseStatus?
     
     static let timeFormatter: DateFormatter = {
         
@@ -435,12 +444,13 @@ func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) 
     
     let dateFormatter = Configuration.dateFormatter
     let dateString = dateFormatter.string(from: date)
+    let email = configuration.google.username
     var entries: [TogglEntry] = []
     
     for calendarID in configuration.google.calendarIDs {
 
         print("\(dateString)    \(calendarID)")
-        let output = shell("./get_google_calendar_entries.rb", dateString, calendarID)
+        let output = shell("./get_google_calendar_entries.rb", dateString, calendarID, email)
         
         if let eventsJSONData = output.1?.data(using: .utf8) {
             
@@ -448,6 +458,11 @@ func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) 
             
             
             for event in events {
+                
+                if event.responseStatus != .accepted {
+                    
+                    continue
+                }
                 
                 if event.allDay {
                     

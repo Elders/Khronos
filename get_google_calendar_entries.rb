@@ -13,6 +13,7 @@ CREDENTIALS_PATH = 'token.yaml'.freeze
 SCOPE = Google::Apis::CalendarV3::AUTH_CALENDAR_READONLY
 DATE = ARGV[0]
 CALENDAR_ID = ARGV[1]
+USER_EMAIL = ARGV[2]
 ##
 # Ensure valid credentials, either by restoring from the saved credentials
 # files or intitiating an OAuth2 authorization. If authorization is required,
@@ -52,13 +53,21 @@ calendar = service.get_calendar_list(CALENDAR_ID)
 
 result = []
 events.items.each do | event |
-    
+
   element = {}
   element["allDay"] = event.start.date != nil
   element["title"] = event.summary
   element["start"] = event.start.date || event.start.date_time
   element["end"] = event.end.date || event.end.date_time
   element["description"] = event.description
+
+  if event.attendees != nil
+      user = event.attendees.select { |a| a.email == USER_EMAIL }
+      user = user.first
+      if user != nil
+          element["responseStatus"] = user.response_status
+      end
+  end
 
   result.push(element)
 end
