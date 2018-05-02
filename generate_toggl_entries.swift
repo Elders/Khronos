@@ -449,7 +449,6 @@ func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) 
     
     for calendarID in configuration.google.calendarIDs {
 
-        print("\(dateString)    \(calendarID)")
         let output = shell("./get_google_calendar_entries.rb", dateString, calendarID, email)
         
         if let eventsJSONData = output.1?.data(using: .utf8) {
