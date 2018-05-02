@@ -23,6 +23,6 @@
         
         "email": "",
         "name": "",
-        "jiraClientMap": {"VAPT": "OneBigSplash", "VAPT-Server": "OneBigSplash", "VAPT-iOS": "OneBigSplash", "VAPT-Android": "OneBigSplash", "Cellements Support": "Cellements", "NewGen": "MarketVision", "Pruvit Support": "Pruvit", "Ticketing System": "MarketVision", "Identity and Access": "MarketVision"}
+        "jiraClientMap": {"VAPT": "OneBigSplash", "VAPT-Server": "OneBigSplash", "VAPT-iOS": "OneBigSplash", "VAPT-Android": "OneBigSplash", "Cellements Support": "Cellements", "NewGen": "MarketVision", "Pruvit Support": "Pruvit", "Ticketing System": "MarketVision", "Identity and Access": "MarketVision", "DevOps": "MarketVision"}
     }
 }

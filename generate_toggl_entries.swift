@@ -499,7 +499,13 @@ func loadEntries(at date: Date, for configuration: Configuration) -> [TogglEntry
     let wholeDayCalendarEntries = googleCalendarEntries.filter({ $0.duration == $0.durationString(from: configuration.khronos.workingDuration) })
     let partialDayCalendarEntries = googleCalendarEntries.filter({ $0.duration != $0.durationString(from: configuration.khronos.workingDuration) })
     
-    var entries = loadJIRAEntries(forUsername: jiraUsername, password: jiraPassword, asignee: jiraAssignee, at: date) + partialDayCalendarEntries
+    let jiraEntries = loadJIRAEntries(forUsername: jiraUsername, password: jiraPassword, asignee: jiraAssignee, at: date)
+    jiraEntries.forEach { entry in
+        
+        entry.client = clientMap[entry.project] ?? entry.project
+    }
+    
+    var entries = jiraEntries + partialDayCalendarEntries
     entries.forEach { entry in
         
         entry.user = configuration.toggl.name
@@ -523,7 +529,6 @@ func loadEntries(at date: Date, for configuration: Configuration) -> [TogglEntry
     //fill fixed data
     entries.forEach { (entry) in
         
-        entry.client = clientMap[entry.project] ?? entry.project
         entry.billable = "Yes"
         entry.startDate = dateFormatter.string(from: date)
         entry.endDate = entry.startDate
