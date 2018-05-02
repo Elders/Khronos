@@ -25,22 +25,37 @@ func shell(_ args: String...) -> (Int32, String?) {
     return (task.terminationStatus, string)
 }
 
-class Configuration {
+struct Configuration: Codable {
     
-    let from: Date
-    let to: Date
-    let skip: [Date]
+    struct Khronos: Codable {
+        
+        let from: Date
+        let to: Date
+        let skip: [Date]
+        let workingDuration: TimeInterval
+        let startTimeString: String
+    }
     
-    let clientMap: [String: String]
-    let allowedProjects: [String]
-    let workingDuration: TimeInterval
-    let startTimeString: String
+    struct Jira: Codable {
+        
+        let username: String
+        let password: String
+        let assignee: String
+        let allowedProjects: [String]
+    }
     
-    let jiraUsername: String
-    let jiraPassword: String
-    let jiraAssignee: String
+    struct Google: Codable {
+        
+        let calendarIDs: [String]
+        let username: String
+    }
     
-    let googleCalendarIDs: [String]
+    struct Toggl: Codable {
+        
+        let jiraClientMap: [String: String]
+        let email: String
+        let name: String
+    }
     
     static let dateFormatter: DateFormatter = {
         
@@ -53,109 +68,42 @@ class Configuration {
         return dateFormatter
     }()
     
+    let khronos: Khronos
+    let jira: Jira
+    let google: Google
+    let toggl: Toggl
+    
     init() throws {
         
         let configurationFileURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath, isDirectory: true).appendingPathComponent("CONFIGURATION", isDirectory: false).appendingPathExtension("json")
         let data = try Data(contentsOf: configurationFileURL)
         let dateFormatter = Configuration.dateFormatter
         
-        guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
-            
-            throw "Unable to load configuration"
-        }
-        
-        guard let fromString = json["from"] as? String, let fromDate = dateFormatter.date(from: fromString)  else {
-            
-            throw "Unable to load `from` date from configuration"
-        }
-        
-        guard let toString = json["to"] as? String, let toDate = dateFormatter.date(from: toString) else {
-            
-            throw "Unable to load `to` date from configuration"
-        }
-        
-        guard let clientMap = json["clientMap"] as? [String: String] else {
-            
-            throw "Unable to load clientMap from configuration"
-        }
-        
-        guard let allowedProjects = json["allowedProjects"] as? [String] else {
-            
-            throw "Unable to load allowedProjects from configuration"
-        }
-        
-        guard let workingDuration = json["workingDuration"] as? TimeInterval else {
-            
-            throw "Unable to load workingDuration from configuration"
-        }
-        
-        guard let startTimeString = json["startTimeString"] as? String else {
-            
-            throw "Unable to load startTimeString from configuration"
-        }
-        
-        guard let jiraUsername = json["jiraUsername"] as? String else {
-            
-            throw "Unable to load jiraUsername from configuration"
-        }
-        
-        guard let jiraPassword = json["jiraPassword"] as? String else {
-            
-            throw "Unable to load jiraPassword from configuration"
-        }
-        
-        guard let jiraAssignee = json["jiraAssignee"] as? String else {
-            
-            throw "Unable to load jiraAssignee from configuration"
-        }
-        
-        self.from = fromDate
-        self.to = toDate
-        
-        self.skip = (json["skip"] as? [String] ?? []).reduce([]) { (result, string) -> [Date] in
-            
-            var result = result
-            
-            if let date = dateFormatter.date(from: string) {
-                
-                result.append(date)
-            }
-            
-            return result
-        }
-        
-        self.clientMap = clientMap
-        self.allowedProjects = allowedProjects
-        self.workingDuration = workingDuration
-        self.startTimeString = startTimeString
-        
-        self.jiraUsername = jiraUsername
-        self.jiraPassword = jiraPassword
-        self.jiraAssignee = jiraAssignee
-        
-        self.googleCalendarIDs = json["googleCalendarIDs"] as? [String] ?? []
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .formatted(dateFormatter)
+        self = try decoder.decode(Configuration.self, from: data)
     }
     
-    lazy var workingDates: [Date] = { [unowned self] in
+    var workingDates: [Date] {
         
         let calendar = Calendar.fixed
         let workingWeekdayIndexes = [1, 2, 3, 4, 5] // monday to friday
         
-        var date = self.from
+        var date = self.khronos.from
         var workingDates: [Date] = [date]
         
-        while date <= self.to {
+        while date <= self.khronos.to {
             
             date = calendar.date(byAdding: .day, value: 1, to: date)!
             
-            if !self.skip.contains(date) && workingWeekdayIndexes.contains(date.weekdayIndex(in: .fixed)) {
+            if !self.khronos.skip.contains(date) && workingWeekdayIndexes.contains(date.weekdayIndex(in: .fixed)) {
 
                 workingDates.append(date)
             }
         }
         
         return workingDates
-    }()
+    }
 }
 
 class TogglEntry {
@@ -229,6 +177,35 @@ class TogglEntry {
         let durationTime = zeroTime.addingTimeInterval(timeInterval)
         return timeFormatter.string(from: durationTime)
     }
+    
+    func update(withEventDescription description: String?) -> Bool {
+        
+        guard let description = description else {
+            
+            return false
+        }
+        
+        do {
+            
+            //match the toggle client and project and set them
+            let regex = try NSRegularExpression(pattern: "toggl:(?<client>\\w*):(?<project>\\w*[\\s\\-]?\\w*)")
+            let matches = regex.matches(in: description, options: [])
+            
+            guard matches.count == 3 else {
+                
+                return false
+            }
+            
+            self.client = matches[1]
+            self.project = matches[2]
+            
+            return true
+        }
+        catch {
+        
+            return false
+        }
+    }
 }
 
 struct GoogleCalendarEvent: Codable {
@@ -237,6 +214,7 @@ struct GoogleCalendarEvent: Codable {
     let title: String
     let start: String
     let end: String
+    let description: String?
     
     static let timeFormatter: DateFormatter = {
         
@@ -278,21 +256,6 @@ struct GoogleCalendarEvent: Codable {
 //MARK: - URLRequest extensions
 
 extension URLRequest {
-    
-    static func makeJIRAAssigneeRequest(username: String, password: String, asignee: String) -> URLRequest {
-        
-        guard let url = URL(string: "https://marketvision.atlassian.net/rest/api/2/user?username=\(asignee)") else {
-            
-            fatalError("\(#function) - Unable to generate URL")
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.authorizeWith(username: username, password: password)
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        return request
-    }
     
     static func makeJIRAIssuesRequest(username: String, password: String, asignee: String, date: Date) -> URLRequest {
         
@@ -385,37 +348,41 @@ extension Calendar {
     }
 }
 
+//MARK: - NSRegularExpression extensions
+
+extension NSRegularExpression {
+    
+    public func matches(in string: String, options: NSRegularExpression.MatchingOptions) -> [String] {
+        
+        let range = NSRange(location: 0, length: string.count)
+        return self.matches(in: string, options: options, range: range).flatMap({ (result) -> [String] in
+            
+            var matches: [String] = []
+            
+            for i in 0..<result.numberOfRanges {
+                
+                let range = result.range(at: i)
+                
+                let startIndex = string.index(string.startIndex, offsetBy: range.location)
+                let endIndex = string.index(startIndex, offsetBy: range.length - 1)
+                let match = string[startIndex...endIndex]
+                
+                matches.append(String(match))
+            }
+            
+            return matches
+        })
+    }
+}
+
+
 //MARK: - JIRA
 
 func loadJIRAEntries(forUsername username: String, password: String, asignee: String, at date: Date) -> [TogglEntry] {
     
-    var assigneeJSON: [String: Any] = [:]
     var issuesJSON: [String: Any] = [:]
     
     let semaphore = DispatchSemaphore(value: 0)
-    let assigneeReuqest = URLRequest.makeJIRAAssigneeRequest(username: username, password: password, asignee: asignee)
-    URLSession(configuration: .default).dataTask(with: assigneeReuqest, completionHandler: { (data, response, error) in
-        
-        guard let data = data else { fatalError("\(#function) - no data") }
-        
-        do {
-            
-            guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
-                
-                fatalError("\(#function) - unable to load JSON for URL=\(assigneeReuqest.url!)")
-            }
-            
-            assigneeJSON = json
-            semaphore.signal()
-        }
-        catch {
-            
-            fatalError("\(error)")
-        }
-        
-    }).resume()
-    semaphore.wait()
-    
     let issuesReuqest = URLRequest.makeJIRAIssuesRequest(username: username, password: password, asignee: asignee, date: date)
     URLSession(configuration: .default).dataTask(with: issuesReuqest, completionHandler: { (data, response, error) in
         
@@ -443,8 +410,6 @@ func loadJIRAEntries(forUsername username: String, password: String, asignee: St
     let result = issues.map { (issueJSON) -> TogglEntry in
         
         guard
-        let user = assigneeJSON["displayName"] as? String,
-        let email = assigneeJSON["emailAddress"] as? String,
         let fields = issueJSON["fields"] as? [String: Any],
         let project = fields["project"] as? [String: Any],
         let projectName = project["name"] as? String,
@@ -456,8 +421,6 @@ func loadJIRAEntries(forUsername username: String, password: String, asignee: St
         }
         
         let entry = TogglEntry()
-        entry.user = user
-        entry.email = email
         entry.project = projectName
         entry.description = "\(key) \(summary)"
         return entry
@@ -474,13 +437,15 @@ func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) 
     let dateString = dateFormatter.string(from: date)
     var entries: [TogglEntry] = []
     
-    for calendarID in configuration.googleCalendarIDs {
+    for calendarID in configuration.google.calendarIDs {
 
+        print("\(dateString)    \(calendarID)")
         let output = shell("./get_google_calendar_entries.rb", dateString, calendarID)
         
         if let eventsJSONData = output.1?.data(using: .utf8) {
             
-            let events = (try? JSONDecoder().decode([GoogleCalendarEvent].self, from: eventsJSONData)) ?? []
+            let events = try! JSONDecoder().decode([GoogleCalendarEvent].self, from: eventsJSONData)
+            
             
             for event in events {
                 
@@ -488,13 +453,13 @@ func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) 
                     
                     let entry = TogglEntry()
 
-                    entry.user = "whole day"
-                    entry.email = "whole day"
-                    entry.project = "whole day"
                     entry.description = event.title
-                    entry.duration = entry.durationString(from: configuration.workingDuration)
+                    entry.duration = entry.durationString(from: configuration.khronos.workingDuration)
                     
-                    entries.append(entry)
+                    if entry.update(withEventDescription: event.description) {
+                        
+                        entries.append(entry)
+                    }
                     
                     continue
                 }
@@ -503,13 +468,13 @@ func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) 
                     
                     let entry = TogglEntry()
 
-                    entry.user = "gg"
-                    entry.email = "gg"
-                    entry.project = "gg"
                     entry.description = event.title
                     entry.duration = duration
-
-                    entries.append(entry)
+                    
+                    if entry.update(withEventDescription: event.description) {
+                        
+                        entries.append(entry)
+                    }
                 }
             }
         }
@@ -522,26 +487,32 @@ func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) 
 
 func loadEntries(at date: Date, for configuration: Configuration) -> [TogglEntry] {
     
-    let clientMap = configuration.clientMap
-    let workingDuration = configuration.workingDuration
-    let startTimeString = configuration.startTimeString
+    let clientMap = configuration.toggl.jiraClientMap
+    let workingDuration = configuration.khronos.workingDuration
+    let startTimeString = configuration.khronos.startTimeString
     
-    let jiraUsername = configuration.jiraUsername
-    let jiraPassword = configuration.jiraPassword
-    let jiraAssignee = configuration.jiraAssignee
+    let jiraUsername = configuration.jira.username
+    let jiraPassword = configuration.jira.password
+    let jiraAssignee = configuration.jira.assignee
     
-//    let googleCalendarEntries =  loadGoogleCalendarEntries(at: date, for: configuration)
-//    let wholeDayCalendarEntries = googleCalendarEntries.filter({ $0.duration == $0.durationString(from: configuration.workingDuration) })
-//    let partialDayCalendarEntries = googleCalendarEntries.filter({ $0.duration != $0.durationString(from: configuration.workingDuration) })
+    let googleCalendarEntries =  loadGoogleCalendarEntries(at: date, for: configuration)
+    let wholeDayCalendarEntries = googleCalendarEntries.filter({ $0.duration == $0.durationString(from: configuration.khronos.workingDuration) })
+    let partialDayCalendarEntries = googleCalendarEntries.filter({ $0.duration != $0.durationString(from: configuration.khronos.workingDuration) })
     
-    var entries = loadJIRAEntries(forUsername: jiraUsername, password: jiraPassword, asignee: jiraAssignee, at: date) //+ partialDayCalendarEntries
-    entries = entries.filter({ configuration.allowedProjects.isEmpty == true || configuration.allowedProjects.contains($0.project) })
+    var entries = loadJIRAEntries(forUsername: jiraUsername, password: jiraPassword, asignee: jiraAssignee, at: date) + partialDayCalendarEntries
+    entries.forEach { entry in
+        
+        entry.user = configuration.toggl.name
+        entry.email = configuration.toggl.email
+    }
     
-//    //the there are whole day entries - take the appropriate one and use it instead of everything else
-//    if wholeDayCalendarEntries.isEmpty == false {
-//        
-//        entries = [wholeDayCalendarEntries.first!]
-//    }
+    entries = entries.filter({ configuration.jira.allowedProjects.isEmpty == true || configuration.jira.allowedProjects.contains($0.project) })
+    
+    //the there are whole day entries - take the appropriate one and use it instead of everything else
+    if wholeDayCalendarEntries.isEmpty == false {
+        
+        entries = [wholeDayCalendarEntries.first!]
+    }
     
     let dateFormatter = TogglEntry.dateFormatter
     let timeFormatter = TogglEntry.timeFormatter

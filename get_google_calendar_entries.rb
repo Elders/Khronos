@@ -49,17 +49,18 @@ MAX_TIME="#{DATE}T23:59:59+00:00"
 events = service.list_events(CALENDAR_ID, single_events: true, order_by: 'startTime', time_min: MIN_TIME, time_max: MAX_TIME)
 calendar = service.get_calendar_list(CALENDAR_ID)
 
+
 result = []
 events.items.each do | event |
-
+    
   element = {}
   element["allDay"] = event.start.date != nil
   element["title"] = event.summary
   element["start"] = event.start.date || event.start.date_time
   element["end"] = event.end.date || event.end.date_time
+  element["description"] = event.description
 
   result.push(element)
-
 end
 
 puts result.to_json
