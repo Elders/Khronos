@@ -34,7 +34,7 @@ Automatically generate and upload Toggl entries from JIRA
 
 		brew update
 		brew install npm
-		npm install -g toggl-bulk-entry
+		npm install -g https://github.com/Elders/node-toggl-bulk-entry.git
 		gem install google-api-client --user-install
 
 ## Install on Linux (Ubuntu)
@@ -46,13 +46,16 @@ Automatically generate and upload Toggl entries from JIRA
 	sudo apt-get install npm
 	sudo apt-get install ruby
 	gem install google-api-client
-	npm install -g toggl-bulk-entry
+	git clone git@github.com:Elders/node-toggl-bulk-entry.git
+	npm install -g https://github.com/Elders/node-toggl-bulk-entry.git
 
 ## Intall on Windows
 
 - implement the scrip on a sharp language by your choise
 - make it part of this repository
 - let us know how we could use it
+
+Or take a look on how to install [Swift on Windows](https://github.com/apple/swift/blob/master/docs/Windows.md)
 
 ## Configuration
 
