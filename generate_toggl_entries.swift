@@ -92,7 +92,7 @@ struct Configuration: Codable {
         var date = self.khronos.from
         var workingDates: [Date] = [date]
         
-        while date <= self.khronos.to {
+        while date < self.khronos.to {
             
             date = calendar.date(byAdding: .day, value: 1, to: date)!
             
@@ -224,6 +224,7 @@ struct GoogleCalendarEvent: Codable {
     let end: String
     let description: String?
     let responseStatus: ResponseStatus?
+    let creator: String
     
     static let timeFormatter: DateFormatter = {
         
@@ -458,7 +459,7 @@ func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) 
             
             for event in events {
                 
-                if event.responseStatus != .accepted {
+                if event.creator != email && event.responseStatus != .accepted {
                     
                     continue
                 }
@@ -520,18 +521,19 @@ func loadEntries(at date: Date, for configuration: Configuration) -> [TogglEntry
     }
     
     var entries = jiraEntries + partialDayCalendarEntries
+    entries = entries.filter({ configuration.jira.allowedProjects.isEmpty == true || configuration.jira.allowedProjects.contains($0.project) })
+    
+    //if there are whole day entries - take the appropriate one and use it instead of everything else
+    if wholeDayCalendarEntries.isEmpty == false {
+        
+        entries = [wholeDayCalendarEntries.first!]
+    }
+    
+    //populate the user and email
     entries.forEach { entry in
         
         entry.user = configuration.toggl.name
         entry.email = configuration.toggl.email
-    }
-    
-    entries = entries.filter({ configuration.jira.allowedProjects.isEmpty == true || configuration.jira.allowedProjects.contains($0.project) })
-    
-    //the there are whole day entries - take the appropriate one and use it instead of everything else
-    if wholeDayCalendarEntries.isEmpty == false {
-        
-        entries = [wholeDayCalendarEntries.first!]
     }
     
     let dateFormatter = TogglEntry.dateFormatter

@@ -6,6 +6,8 @@ require 'googleauth/stores/file_token_store'
 require 'fileutils'
 require 'json'
 
+#DOCS: https://github.com/google/google-api-ruby-client/blob/1476c31b2f5c3e37e045c6ff774db4d301dd54db/generated/google/apis/calendar_v3/service.rb
+
 OOB_URI = 'urn:ietf:wg:oauth:2.0:oob'.freeze
 APPLICATION_NAME = 'Google Calendar API Ruby Quickstart'.freeze
 CLIENT_SECRETS_PATH = 'GOOGLE_CALENDAR_AUTH.json'.freeze
@@ -68,6 +70,8 @@ events.items.each do | event |
           element["responseStatus"] = user.response_status
       end
   end
+
+  element["creator"] = event.creator.email
 
   result.push(element)
 end
