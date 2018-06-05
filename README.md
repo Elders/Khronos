@@ -83,7 +83,7 @@ Before you begin, you must configure the scripts to work for you. You can do thi
 
 
 #### `TOGGL_API_TOKEN`
-Set the contents of this file to  your toggle API token.
+Set the contents of this file to  your toggle [API token](#How-to-generate-Toggl-API-Token).
 
 #### `GOOGLE_CALENDAR_AUTH`
 This file is generated when you enable the [Google Calendar API in Step 1](https://developers.google.com/calendar/quickstart/ruby).
@@ -135,3 +135,8 @@ Its always better and more secure to use API tokens rarther than your real passw
 ## How to generate `GOOGLE_CALENDAR_AUTH `
 
 Follow the instructions in the [Google Calendar API in Step 1](https://developers.google.com/calendar/quickstart/ruby).
+
+## How to generate Toggl API Token
+
+- go to your [Toggl profile page](https://toggl.com/app/profile)
+- scroll to bottom and generate a new API token
