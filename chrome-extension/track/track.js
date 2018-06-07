@@ -58,9 +58,13 @@ function ViewModel(){
 
         var togglProvider = new TogglProvider();
         var jiraProvider = new JiraProvider();
+        var gCalendarProvider = new GCalendarProvider();
 
         self.dataProvider.addPlatformProvider('Toggl',togglProvider);
         self.dataProvider.addPlatformProvider('Jira',jiraProvider);
+        self.dataProvider.addPlatformProvider('GoogleCalendar',gCalendarProvider);
+        self.dataProvider.setCalendarPlatformName('GoogleCalendar');
+
     }
 
     this._updateProjectBindings = function _updateProjectBindings(projectBindings){
@@ -131,8 +135,6 @@ function ViewModel(){
         $('#btn-platforms-chosen').click(function(){
             if($(this).hasClass('disabled'))
                 return;
-
-            debugger;
 
             $('#container-platform-choice').animateCss('slideOutDown', function () {
                 $('#container-platform-choice').addClass('hidden');
@@ -224,9 +226,9 @@ function ViewModel(){
 
         //calculate entries for selected dates
         $('#btn-calendar-calculate').click(function(){
+            //get tasks 
             self.dataProvider.getTasksForDays(self.calendar.datesToTrack, 
                 function(tasks){
-                    debugger;
                     for(var i = 0; i < tasks.length;i++){
                         //Set bg color for the events base on the project
                         if(self.calendar.projects[ tasks[i].projectName] == undefined){
@@ -261,7 +263,46 @@ function ViewModel(){
                     }
         
                     self._updateProjectBindings(self.projectBindings);
-                });
+                }
+            );
+
+            //get calendar events
+            self.dataProvider.getEventsForDays(self.calendar.datesToTrack, 
+                function(events){
+                    for(var i = 0; i < events.length;i++){
+                        //Set bg color for the events base on the project
+                        if(self.calendar.projects[ events[i].projectName] == undefined){
+                            self.calendar.projects[ events[i].projectName] = new Project( events[i].projectName);
+                            self.calendar.projects[ events[i].projectName].backgroundColor = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
+                            
+                            var projectBinding = new ProjectBinding();
+                            projectBinding.managementProject = self.calendar.projects[ events[i].projectName];
+                            
+                            self.projectBindings.push(projectBinding)
+                        }
+        
+                        var eventToRender =  {
+                            title  : events[i].name,
+                            start  : events[i].date,
+                            allDay : true,
+                            editable : true,
+                            urlToPlatform : "",
+                            backgroundColor : self.calendar.projects[ events[i].projectName].backgroundColor,
+                            entry:events[i]
+                        }
+                        
+                        eventToRender.id = eventToRender.title + "@@" + eventToRender.start;
+
+                        if( self.calendar.renderedEvents.indexes.indexOf(eventToRender.title + "@@" + eventToRender.start) == -1){
+                            $('#calendar').fullCalendar( 'renderEvent', eventToRender);
+                            self.calendar.renderedEvents.indexes.push(eventToRender.title + "@@" + eventToRender.start);
+                            self.calendar.renderedEvents.objects.push(eventToRender);
+                        }
+                    }
+        
+                    self._updateProjectBindings(self.projectBindings);
+                }
+            );
         })
 
         
@@ -475,9 +516,6 @@ EntryDetailsComponent.prototype = {
         var self = this.self;
         $("#task-component").find(".btn-delete").click(function(){
             $("#calendar").fullCalendar('removeEvents', [self._id]);
-            debugger;
-
-            _
 
             $scope.calendar.renderedEvents.objects = _.without($scope.calendar.renderedEvents.objects, _.find($scope.calendar.renderedEvents.objects, function(o) { return o.id ===  self._id; }));
             $scope.calendar.renderedEvents.indexes = _.without($scope.calendar.renderedEvents.indexes, _.find($scope.calendar.renderedEvents.indexes, function(o) { return o ===  self._id; }));

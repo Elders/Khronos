@@ -21,9 +21,10 @@
     ],
     "content_security_policy": "script-src 'self' https://cdnjs.cloudflare.com; object-src 'self'",
     "oauth2": {
-        "client_id": "384125956456-4he6b1kfcukuboq04hu7o9eecvvqavf9.apps.googleusercontent.com",
+        "client_id": "384125956456-3p302h1c0lavdmi50u1nc7d5a0p36a5v.apps.googleusercontent.com",
         "scopes": [
-          "https://www.googleapis.com/auth/drive"
+          "https://www.googleapis.com/auth/calendar"
         ]
-      }
+    },
+    "key" : "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxHg505kF40e+B4zQQVOGFMeBeQjwyt5HNM6KbW2OItbyYLh2+340qgsVLCpqJhM4MCj2AnIehRobJGSWokKwcEKr8oS9E+Y7i0Pu8KlQjNE8WhJotkSXa36eo7ReX3B2yb1MnOR9FsHVD5l4yLCjv688GtIxo/Acig6M2fwkqFSOXQGw3WtZi35G8Eit5YUG1kz+vybQ3Y++YxQWwyG3hS0lXP0ghK01P59/+g8fwqS2fkJGIKgEXzXztv0MyVKjAHbgKxjd+reyesXEHBltiyKYgdO5fL/l/Z4eoWLqFMS/+znyWa6+StUmkBCD4eHeIG0o7qVZTFtZlsl/Z3LoowIDAQAB"
 }

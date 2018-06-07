@@ -1,6 +1,7 @@
 function DataProvider(managementPlatform,timeTrackingPlatform){    
     this.managementPlatform,
     this.timeTrackingPlatform;
+    this.calendarPlatform;
 
     this.platformProviders = {};
 }
@@ -23,6 +24,17 @@ DataProvider.prototype = {
             }
         );
     },
+    getEventsForDays:function(days, cb){ 
+        debugger;
+        var currentCalendarPlatform = this.platformProviders[this.calendarPlatform];
+        if(!currentCalendarPlatform) cb(undefined);
+        
+        currentCalendarPlatform.getEventsForDays(days, 
+            function(tasks){
+                cb(tasks)
+            }
+        );
+    },
     addPlatformProvider:function(name,provider){
         this.platformProviders[name] = provider;
     },
@@ -31,6 +43,9 @@ DataProvider.prototype = {
     },
     setTimeTrackingPlatformName:function(platformName){
         this.timeTrackingPlatform = platformName;
+    },
+    setCalendarPlatformName:function(platformName){
+        this.calendarPlatform = platformName;
     },
     trackEntities:function(entities,onEntryAdded){
         var currentTimeTrackingPlatformProvider = this.platformProviders[this.timeTrackingPlatform];
