@@ -47,14 +47,17 @@ struct Configuration: Codable {
     struct Google: Codable {
         
         let calendarIDs: [String]
+        let holidayCalendarIDs: [String]
         let username: String
     }
     
     struct Toggl: Codable {
         
-        let jiraClientMap: [String: String]
         let email: String
         let name: String
+        let jiraClientMap: [String: String]
+        let holidayClient: String
+        let holidayProject: String
     }
     
     static let dateFormatter: DateFormatter = {
@@ -456,11 +459,36 @@ func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) 
             
             let events = try! JSONDecoder().decode([GoogleCalendarEvent].self, from: eventsJSONData)
             
-            
             for event in events {
+                
+                //if this event is part of a holiday calendar - log it as whole day and skipp all other events
+                if configuration.google.holidayCalendarIDs.contains(calendarID) {
+                    
+                    let entry = TogglEntry()
+                    
+                    entry.description = event.title
+                    entry.duration = entry.durationString(from: configuration.khronos.workingDuration)
+                    
+                    //add the event if it is tagged with the following pattern toggl:<client>:<project>, eg. toggl:Elders:PTO
+                    if entry.update(withEventDescription: event.description) {
+                        
+                        entries.append(entry)
+                    }
+                    else {
+                        
+                        //fallback to default client and project for holidays
+                        entry.client = configuration.toggl.holidayClient
+                        entry.project = configuration.toggl.holidayProject
+                    }
+                    
+                    entries.append(entry)
+                    
+                    continue
+                }
                 
                 if event.creator != email && event.responseStatus != .accepted {
                     
+                    //this event has not been created by the user and the user has not participated to this event, so we skip it
                     continue
                 }
                 
@@ -471,6 +499,7 @@ func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) 
                     entry.description = event.title
                     entry.duration = entry.durationString(from: configuration.khronos.workingDuration)
                     
+                    //add the event if it is tagged with the following pattern toggl:<client>:<project>, eg. toggl:Elders:PTO
                     if entry.update(withEventDescription: event.description) {
                         
                         entries.append(entry)
