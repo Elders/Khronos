@@ -55,6 +55,7 @@ struct Configuration: Codable {
         
         let email: String
         let name: String
+        let jiraProjectMap: [String: String]
         let jiraClientMap: [String: String]
         let holidayClient: String
         let holidayProject: String
@@ -199,8 +200,8 @@ class TogglEntry {
                 return false
             }
             
-            self.client = matches[1]
-            self.project = matches[2]
+            self.client = matches[1].trimmingCharacters(in: .whitespacesAndNewlines)
+            self.project = matches[2].trimmingCharacters(in: .whitespacesAndNewlines)
             
             return true
         }
@@ -492,7 +493,14 @@ func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) 
                     continue
                 }
                 
+                //if all day
                 if event.allDay {
+                    
+                    //some all day events are reported for the previous day, like PTO - ??? wtf google
+                    guard event.start == dateString else {
+                        
+                        continue
+                    }
                     
                     let entry = TogglEntry()
 
@@ -531,6 +539,7 @@ func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) 
 
 func loadEntries(at date: Date, for configuration: Configuration) -> [TogglEntry] {
     
+    let projectMap = configuration.toggl.jiraProjectMap
     let clientMap = configuration.toggl.jiraClientMap
     let workingDuration = configuration.khronos.workingDuration
     let startTimeString = configuration.khronos.startTimeString
@@ -546,6 +555,7 @@ func loadEntries(at date: Date, for configuration: Configuration) -> [TogglEntry
     let jiraEntries = loadJIRAEntries(forUsername: jiraUsername, password: jiraPassword, asignee: jiraAssignee, at: date)
     jiraEntries.forEach { entry in
         
+        entry.project = projectMap[entry.project] ?? entry.project
         entry.client = clientMap[entry.project] ?? entry.project
     }
     

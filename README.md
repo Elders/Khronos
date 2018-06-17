@@ -80,6 +80,7 @@ Before you begin, you must configure the scripts to work for you. You can do thi
 - `toggl` - configuration related to Toggl
 	- `email` - the email of the toggl user
 	- `name` - the dispaly name of the toggl user
+	- `jiraProjectMap` - the project that should be set to all jira entries, based on the project name from JIRA - **since, at this point it cannot be resolved from JIRA - it has to be hardcoded**
 	- `jiraClientMap` - the client that should be set to all jira entries, based on the project name from JIRA - **since, at this point it cannot be resolved from JIRA - it has to be hardcoded**
 	- `holidayClient` - the default client for holidays, used if not found in the event description.
 	- `holidayProject` - the default project for holidays, used if not found in the event description.
