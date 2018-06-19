@@ -1,0 +1,61 @@
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-lg-offset-3 col-md-offset-3">
+                <h1>{{jiraSettingsUsername}}</h1>
+
+                <div class="card">
+                    <div class="header">
+                        <h4 class="title"> 
+                            <img class="title-logo" src="https://slack-files2.s3-us-west-2.amazonaws.com/avatars/2017-09-11/239622728805_193a5464df40bdbdb528_512.png" alt="">   
+                            Jira Credentials
+                        </h4>
+                    </div>
+                    <div class="content">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label>Username</label>
+                                        <input type="text" class="form-control border-input" placeholder="Username" value="" [(ngModel)]="jiraSettingsUsername">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label>Password</label>
+                                        <input type="password" class="form-control border-input" placeholder="Password" value="">
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                        <div class="header">
+                            <h4 class="title"> 
+                                <img class="title-logo" src="https://services.garmin.com/appsLibraryBusinessServices_v0/rest/apps/83f14afb-dbba-4ec4-9de5-279404102e11/icon/ff12a1a6-8a10-4c75-8ee2-9f610d10bf51" alt="">   
+                                Toggl Token
+                            </h4>
+                        </div>
+                        <div class="content">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label>Token</label>
+                                            <input type="text" class="form-control border-input" placeholder="Token" value="">
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-info btn-fill btn-wd">Update Settings</button>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+
+        </div>
+    </div>

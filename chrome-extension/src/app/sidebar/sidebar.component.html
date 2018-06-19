@@ -1,0 +1,26 @@
+
+<div class="sidebar-wrapper">
+    <div class="logo">
+        <a href="https://www.creative-tim.com" class="simple-text">
+            <div class="logo-img">
+                <img src="https://eldersoss.com/img/logo-red.svg" alt="">
+            </div>
+            
+        </a>
+    </div>
+    <ul class="nav">
+            <li *ngIf="isNotMobileMenu()">
+                <a [routerLink]="['settings']">
+					<i class="ti-settings"></i>
+					<p>Settings</p>
+                </a>
+            </li>
+            <li class="divider" *ngIf="isNotMobileMenu()"></li>
+        <li *ngFor="let menuItem of menuItems" routerLinkActive="active" class="{{menuItem.class}}">
+            <a [routerLink]="[menuItem.path]">
+                <i class="{{menuItem.icon}}"></i>
+                <p>{{menuItem.title}}</p>
+            </a>
+        </li>
+    </ul>
+</div>

@@ -1,0 +1,23 @@
+{
+    "manifest_version": 2,
+    "name": "Test Extension",
+    "version": "1.0.0",
+    "permissions": [ "tabs", "activeTab","storage" ],
+    "content_scripts": [
+      {
+        "matches": [ "*://*/*" ],
+        "js": [ "content-script.js" ]
+      }
+    ],
+    "background": {
+      "page": "index.html/index.html#dashboard",
+      "persistent": false
+    },
+    "browser_action": {
+      "default_title": "Elders Khronos Time Logging",
+      "default_popup": "index.html/index.html#dashboard"
+    },
+    "icons": {
+    },
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+  }
