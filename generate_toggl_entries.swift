@@ -487,9 +487,16 @@ func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) 
                     continue
                 }
                 
-                if event.creator != email && event.responseStatus != .accepted {
+                if event.responseStatus != nil && event.responseStatus != .accepted {
                     
-                    //this event has not been created by the user and the user has not participated to this event, so we skip it
+                    //if the user has not participated to this event
+                    continue
+                }
+                
+                if event.responseStatus == nil && event.creator != email {
+                    
+                    //this event has not been created by the user
+                    //used for PTO events, because PTO events do not have attendees
                     continue
                 }
                 
