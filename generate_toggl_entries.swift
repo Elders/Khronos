@@ -503,8 +503,13 @@ func loadGoogleCalendarEntries(at date: Date, for configuration: Configuration) 
                 //if all day
                 if event.allDay {
                     
+                    guard let startDate = dateFormatter.date(from: event.start), let endDate = dateFormatter.date(from: event.end) else {
+                        
+                        continue
+                    }
+                    
                     //some all day events are reported for the previous day, like PTO - ??? wtf google
-                    guard event.start == dateString else {
+                    guard startDate <= date && date <= endDate else {
                         
                         continue
                     }
