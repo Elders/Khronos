@@ -71,7 +71,7 @@ events.items.each do | event |
       end
   end
 
-  element["creator"] = event.creator.email
+  element["creator"] = event.creator&.email
 
   result.push(element)
 end
