@@ -1,0 +1,33 @@
+<div class="row">
+    <div class="col-md-8">
+        <div class="form-group">
+            <p-schedule [events]="events" (onDayClick)="handleDayClick($event)" (onEventClick)="handleEventClick($event)"></p-schedule>
+        </div>
+
+        <div class="form-group">
+            <button class="btn btn-success btn-fill btn-wd pull-left" [disabled]="events.length == 0" (click)="log()">
+                Track
+            </button>
+            <button class="btn btn-info btn-fill btn-wd pull-right" [disabled]="selectedDates.length == 0" (click)="fetchTasks()">
+                Fetch Tasks
+            </button>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="row">
+            <h2>TASK INFO:</h2>
+            <div *ngIf="this.selectedTask">
+                <h3><a target="_blank" href="https://marketvision.atlassian.net/browse/{{selectedTask.entry.key}}">{{selectedTask.entry.key}}</a></h3>
+                <h4 style="min-height: 4em;">{{selectedTask.entry.name}}</h4>
+                <p>
+                    Lenght: {{selectedTask.workingHours}} : {{selectedTask.workingMinutes}} h
+                </p>
+                <p>
+                    <a target="_blank" href="https://marketvision.atlassian.net/browse/{{selectedTask.entry.key}}">See
+                        more</a>
+                </p>
+            </div>
+        </div>
+        <hr>
+    </div>
+</div>

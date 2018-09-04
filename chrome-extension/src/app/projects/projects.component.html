@@ -1,0 +1,25 @@
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-center">Jira Project</th>
+                <th class="text-center">Toggl Project</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let proj of allProjects">
+                <td class="text-center" id="proj-name-{{proj[0].key}}">{{proj[0].name}}</td>
+                <td class="text-center" id="proj-binded-name-{{proj[0].key}}">{{ proj[1] ?
+                    proj[1].togglProjectName :
+                    "Unassigned"}}</td>
+                <td id="proj-bind-input-{{proj[0].key}}" style="display:none">
+                    <input type="text" value="" placeholder="Input" class="form-control" id="input-{{proj[0].key}}" /></td>
+                <td class="text-center">
+                    <button class="btn btn-default" id="proj-edit-btn-{{proj[0].key}}" (click)="clickEditProject(proj[0])">Edit</button>
+                    <button class="btn btn-success" id="proj-save-btn-{{proj[0].key}}" style="display:none" (click)="clickSaveProject(proj[0])">Save</button>
+                    <button class="btn btn-danger" id="proj-cancel-btn-{{proj[0].key}}" style="display:none" (click)="clickCancelProject(proj[0])">Cancel</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
